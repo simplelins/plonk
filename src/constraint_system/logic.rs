@@ -343,7 +343,65 @@ mod tests {
     use dusk_bls12_381::BlsScalar;
 
     #[test]
-    fn test_logic_xor_and_constraint() {
+    fn logic_xor() {
+        let res = gadget_tester(
+            |composer| {
+                let a = BlsScalar::from_raw([
+                    0xffefffff00000001,
+                    0x53bda402fffe5bfe,
+                    0x3319d80809a1d805,
+                    0x73eda758299d7d48,
+                ]);
+                let b = BlsScalar::from_raw([
+                    0x1fe4fa89f2eebc13,
+                    0x19420effaad6cb43,
+                    0x0000138739efccab,
+                    0x2979bc292cccde11,
+                ]);
+                let witness_a = composer.append_witness(a);
+                let witness_b = composer.append_witness(b);
+                let bits = 32 * 8;
+                let xor_res =
+                    composer.component_xor(witness_a, witness_b, bits);
+                // Check that the XOR result is indeed what we are expecting.
+                composer.assert_equal_constant(xor_res, a ^ b, None);
+            },
+            500,
+        );
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn logic_and() {
+        let res = gadget_tester(
+            |composer| {
+                let a = BlsScalar::from_raw([
+                    0xcdbbba32b2059321,
+                    0xd23d790abc203def,
+                    0x039290023244ddd2,
+                    0x221045dddbaaa234,
+                ]);
+                let b = BlsScalar::from_raw([
+                    0xffeffa89f2eebc13,
+                    0x19420effaad6cb43,
+                    0x0000138739efccab,
+                    0x2979bc292cccde11,
+                ]);
+                let witness_a = composer.append_witness(a);
+                let witness_b = composer.append_witness(b);
+                let bits = 32 * 8;
+                let and_res =
+                    composer.component_and(witness_a, witness_b, bits);
+                // Check that the XOR result is indeed what we are expecting.
+                composer.assert_equal_constant(and_res, a & b, None);
+            },
+            500,
+        );
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn test_logic_xor_and_constraint_small() {
         // Should pass since the XOR result is correct and the bit-num is even.
         let res = gadget_tester(
             |composer| {
